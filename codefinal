@@ -1,0 +1,226 @@
+# U.S. Medical Insurance Costs
+
+import csv
+
+#patient class, retained age and num of children update from training excercise
+class Patient:
+    def __init__(self, ID, age, sex, bmi, children, smoker, region, charges):
+        self.id = ID
+        self.age = age
+        self.sex = sex
+        self.bmi = bmi
+        self.num_of_children = children
+        self.smoker = smoker
+        self.region = region
+        self.charges = charges
+    def update_age(self, new_age):
+        self.age = new_age
+        print(self.ID + " is now " + str(self.age) + " years old.")
+    def update_num_children(self, new_num_children):
+        self.num_of_children = new_num_children
+        if self.num_of_children == 1:
+            print(self.name + " has " + str(self.num_of_children) + " child.")
+        else:
+            print(self.name + " has " + str(self.num_of_children) + " children.")
+            
+
+#converts file into dictionary of dictionaries
+def file_to_dict(file):
+    insurance_file = csv.DictReader(open(file))
+    patient_data = {}
+    for row in insurance_file:
+       patient_data[row['ID']] = row
+    return patient_data
+
+patient_data = file_to_dict('insurance.csv')
+
+#adds each patient to the Patient class and stores id in list
+def file_to_class(file):
+    insurance_file = csv.DictReader(open(file))
+    class_item = []
+    for row in insurance_file:
+        key = Patient(row['ID'], row['age'], row['sex'], row['bmi'], row['children'], row['smoker'], row['region'], row['charges'])
+        class_item.append(key)
+    return class_item
+
+insurance_class = file_to_class('insurance.csv')
+
+#calculates the average charge based on whether patient is a smoker
+def smoker_avg(class_dict):
+    smoker_total = 0
+    smoker_count = 0
+    nonsmoker_total = 0
+    nonsmoker_count = 0
+    smoker_avg_dict = {}
+    for patient in class_dict:
+        if patient.smoker == "yes":
+            smoker_total += float(patient.charges)
+            smoker_count += 1
+        else:
+            nonsmoker_total += float(patient.charges)
+            nonsmoker_count += 1
+    smoker_avg_dict['Smoker'] = smoker_total/smoker_count
+    smoker_avg_dict['Non Smoker'] = nonsmoker_total/nonsmoker_count
+    return smoker_avg_dict
+
+    
+smoker_avg(insurance_class)
+
+#calculates average charge based on sex of patient
+def sex_avg(class_dict):
+    female_total = 0
+    female_count = 0
+    male_total = 0
+    male_count = 0
+    sex_avg_dict = {}
+    for patient in class_dict:
+        if patient.sex == "female":
+            female_total += float(patient.charges)
+            female_count += 1
+        else:
+            male_total += float(patient.charges)
+            male_count += 1
+    sex_avg_dict["Female"] = female_total/female_count
+    sex_avg_dict['Male'] = male_total/male_count
+    return sex_avg_dict
+    
+sex_avg(insurance_class)
+
+#calculates average charge based on weight class of patient
+def weight_avg(class_dict):
+    under_total = 0
+    under_count = 0
+    healthy_total = 0
+    healthy_count = 0
+    over_total = 0
+    over_count = 0
+    obese_total = 0
+    obese_count = 0
+    weight_avg_dict = {}
+    for patient in class_dict:
+        if float(patient.bmi) < 20:
+            under_total += float(patient.charges)
+            under_count +=1
+        elif float(patient.bmi) >= 20 and float(patient.bmi) < 25:
+            healthy_total += float(patient.charges)
+            healthy_count += 1
+        elif float(patient.bmi) >= 25 and float(patient.bmi) < 30:
+            over_total += float(patient.charges)
+            over_count += 1
+        else:
+            obese_total += float(patient.charges)
+            obese_count +=1
+    weight_avg_dict["Underweight"] = under_total/under_count
+    weight_avg_dict["Healthy"] = healthy_total/healthy_count
+    weight_avg_dict["Overweight"] = over_total/over_count
+    weight_avg_dict["Obese"] = obese_total/obese_count
+    return weight_avg_dict
+
+weight_avg(insurance_class)
+
+#populates a list of regions and compares to patients to calculate average charge based on region
+def region_avg(class_dict):
+    region_list = []
+    for patient in class_dict:
+        if patient.region not in region_list:
+            region_list.append(patient.region)
+    region_avg_list = {}
+    for i in list(range(len(region_list))):
+        region_count = 0
+        region_charge = 0
+        for patient in class_dict:
+            if patient.region == region_list[i]:
+                region_count += 1
+                region_charge += float(patient.charges)
+        region_avg_list[region_list[i]] = region_charge/region_count
+    return region_avg_list
+    
+region_avg(insurance_class)
+
+#populates a list of number of children, sorts and compares to patients to calculate average age and charges of patient based on number of children
+def avg_child(class_dict):
+    num_child_list = []
+    for patient in class_dict:
+        if patient.num_of_children not in num_child_list:
+            num_child_list.append(patient.num_of_children)
+    num_child_list.sort()
+    avg_child_dict = {}
+    for i in list(range(len(num_child_list))):
+        num_child_count = 0
+        charge_total = 0
+        for patient in class_dict:
+            if patient.num_of_children == num_child_list[i]:
+                num_child_count += 1
+                charge_total += float(patient.charges)
+        avg_child_dict[str(num_child_list[i]) + " children"] = charge_total/num_child_count
+    return avg_child_dict
+        
+avg_child(insurance_class)
+
+# counts smokers by sex and returns %age, also calculates average charges for each category
+def smoker_sex(class_dict):
+    male_smoker_count = 0
+    male_count = 0 
+    female_smoker_count = 0
+    female_count = 0
+    male_smoker_charge = 0
+    male_non_charge = 0
+    female_smoker_charge = 0
+    female_non_charge = 0
+    smoker_sex_dict = {}
+    for patient in class_dict:
+        if patient.smoker == 'yes' and patient.sex == 'male':
+            male_smoker_count += 1
+            male_count += 1
+            male_smoker_charge += float(patient.charges)
+        elif patient.smoker == 'no' and patient.sex == 'male':
+            male_count += 1
+            male_non_charge += float(patient.charges)
+        elif patient.smoker == 'no' and patient.sex == 'female':
+            female_count += 1
+            female_non_charge += float(patient.charges)
+        elif patient.smoker == 'yes' and patient.sex == 'female':
+            female_smoker_count += 1
+            female_count += 1
+            female_smoker_charge += float(patient.charges)
+    smoker_sex_dict["female smokers %"] = (female_smoker_count/female_count)*100
+    smoker_sex_dict["female non smokers %"] = ((female_count-female_smoker_count)/female_count)*100
+    smoker_sex_dict["male smokers %"] = (male_smoker_count/male_count)*100
+    smoker_sex_dict["male non smokers %"] = ((male_count-male_smoker_count)/male_count)*100
+    smoker_sex_dict["female smokers avg charge "] = female_smoker_charge/female_smoker_count
+    smoker_sex_dict["male smokers avg charge"] = male_smoker_charge/male_smoker_count
+    smoker_sex_dict["female non smokers avg charge"] = female_non_charge/(female_count - female_smoker_count)
+    smoker_sex_dict["male non smokers avg charge"] = male_non_charge/(male_count - male_smoker_count)
+    return smoker_sex_dict
+
+smoker_sex(insurance_class)
+    
+
+#counts smokers by region and returns %age, also calulates average charges for each catergory
+def smoker_region(class_dict):
+    region_list = []
+    for patient in class_dict:
+        if patient.region not in region_list:
+            region_list.append(patient.region)
+    smoker_region_dict = {}
+    for i in list(range(len(region_list))):
+        region_smoker_count = 0
+        region_count = 0
+        region_smoker_charges = 0
+        region_non_charges = 0
+        for patient in class_dict:
+            if patient.region == region_list[i] and patient.smoker == "yes":
+                region_count += 1
+                region_smoker_count += 1
+                region_smoker_charges += float(patient.charges)
+            elif patient.region == region_list[i]:
+                region_count += 1
+                region_non_charges += float(patient.charges)
+        smoker_region_dict[str(region_list[i]) + " smoker"] = (region_smoker_count/region_count)*100
+        smoker_region_dict[str(region_list[i]) + " non smoker"] = ((region_count - region_smoker_count)/region_count)*100
+        smoker_region_dict[str(region_list[i]) + " smoker avg charges"] = region_smoker_charges / region_smoker_count
+        smoker_region_dict[str(region_list[i]) + " non smoker avg charges"] = region_non_charges / (region_count-region_smoker_count)
+    return smoker_region_dict
+        
+smoker_region(insurance_class)
+
